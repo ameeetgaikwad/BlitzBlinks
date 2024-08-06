@@ -4,6 +4,7 @@ import {
   ActionPostResponse,
 } from "@solana/actions";
 import {
+  clusterApiUrl,
   Connection,
   PublicKey,
   SystemProgram,
@@ -19,7 +20,8 @@ if (globalThis.Buffer === undefined) {
 }
 
 // you should use a private RPC here
-const connection = new Connection("https://api.mainnet-beta.solana.com");
+// const connection = new Connection("https://api.mainnet-beta.solana.com");
+const connection = new Connection(clusterApiUrl("devnet"));
 
 const app = new Hono();
 
@@ -32,11 +34,28 @@ app.use(
 );
 
 app.get("/", (c) => {
+  const baseHref = "https://cf-blitzblinks.amitmanojgaikwad.workers.dev/";
   const response: ActionGetResponse = {
-    title: "Send me some SOL",
-    description: "This is a simple action that allows to tip a creator",
-    icon: "https://img.fotofolio.xyz/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsolana-labs%2Ftoken-list%2Fmain%2Fassets%2Fmainnet%2FSo11111111111111111111111111111111111111112%2Flogo.png",
-    label: "Tip 0.1 SOL",
+    title: "Daily Chess Puzzles",
+    description: "Solve this chess puzzle to earn rewards!",
+    icon: `https://raw.githubusercontent.com/ameeetgaikwad/BlitzBlinks-images/main/1.png`,
+    label: "BlitzBlinks",
+    links: {
+      actions: [
+        {
+          label: "Send 1 SOL", // button text
+          href: `${baseHref}?q=1`,
+        },
+        {
+          label: "Send 5 SOL", // button text
+          href: `${baseHref}?q=1`,
+        },
+        {
+          label: "Send 10 SOL", // button text
+          href: `${baseHref}?q=3`,
+        },
+      ],
+    },
   };
 
   return c.json(response);
@@ -45,10 +64,13 @@ app.get("/", (c) => {
 app.post("/", async (c) => {
   const req = await c.req.json<ActionPostRequest>();
 
+  const query = c.req.query('q')
+console.log(query,'qqq')
   const transaction = await prepareTransaction(new PublicKey(req.account));
 
   const response: ActionPostResponse = {
     transaction: Buffer.from(transaction.serialize()).toString("base64"),
+    message: `${query=='3'?'success':'fail'}`,
   };
 
   return c.json(response);
@@ -57,7 +79,7 @@ app.post("/", async (c) => {
 async function prepareTransaction(payer: PublicKey) {
   const transferIx = SystemProgram.transfer({
     fromPubkey: payer,
-    toPubkey: new PublicKey(PublicKey.default),
+    toPubkey: new PublicKey("8gE6Uq126VEgjqFJKMWaAMpta797UdqfaEP63yaTx2v9"),
     lamports: 10000000, // 0.1 sol
   });
 
